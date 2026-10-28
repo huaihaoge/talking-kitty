@@ -28,17 +28,26 @@
 4. 首次打开后，运行菜单 **TalkingKitty → Build Main Scene**：自动生成 `Assets/Scenes/Main.unity`（主场景 + 全部引用 + UI），并把它加入构建场景列表第 0 位。该菜单可以随时重跑重建场景。
 5. 场景文件 `Main.unity` 生成后会提交进仓库；之后重新打开项目不需要再跑菜单。
 
-## 构建 Android APK
+## 构建 Android APK（Unity 2022.3.62f3c1）
 
-1. 打开项目后，菜单 **File → Build Settings**。
-2. 选择 **Android** 平台，点击 **Switch Platform**。
-3. 确认场景 `Assets/Scenes/Main.unity` 已加入构建列表。
-4. 点击 **Build**，输出 APK 文件。
-5. 把 APK 传到手机上直接安装（侧载，不需要应用商店）。安装时允许"未知来源"即可。
+> 首次在 Editor 中应用 Player Settings 时，请同时核对 [docs/android-player-settings.md](docs/android-player-settings.md) 清单。
+
+1. 使用 **Unity 2022.3.62f3c1**（含 Android Build Support + Android SDK/NDK/OpenJDK 模块）打开项目。
+2. 菜单 **File → Build Settings**：选择 **Android** 平台，点击 **Switch Platform**。
+3. 确认场景 `Assets/Scenes/Main.unity` 已加入构建列表第 0 位（若尚未生成，先运行菜单 **TalkingKitty → Build Main Scene**）。
+4. 在 Build Settings 中点击 **Player Settings**，核对以下关键设置：
+   - **Company**: `huaihaoge`；**Product**: `TalkingKitty`
+   - **Package Name**: `com.huaihaoge.talkingkitty`
+   - **Minimum API Level**: 24；Target API: Automatic (highest installed)
+   - **Orientation**: Portrait
+   - **Scripting Backend**: IL2CPP；**Target Architectures**: 仅 ARM64
+5. 权限要求：应用仅需要 `RECORD_AUDIO`（运行时动态请求），**不需要** `INTERNET`，也不集成任何广告/分析 SDK。构建后可用 `aapt dump permissions Builds/TalkingKitty.apk` 核对权限列表；如 APK 仍带 INTERNET，见清单文档中的自定义 manifest 说明。
+6. 回到 Build Settings，点击 **Build**，输出到 `Builds/TalkingKitty.apk`（`Builds/` 目录已 gitignore，APK 不入库）。
+7. 把 APK 传到手机上直接安装（侧载，不需要应用商店）。安装时允许"未知来源"即可。
 
 详细设计文档见 [docs/superpowers/specs/2026-10-28-talking-kitty-design.md](docs/superpowers/specs/2026-10-28-talking-kitty-design.md)。
 
-家长指南（安装与儿童锁使用说明，中文）将在后续任务中添加到 `docs/parent-guide.md`。
+家长指南见 [docs/parent-guide.md](docs/parent-guide.md)（安装与儿童锁使用说明，中文）。
 
 ## 许可证
 
