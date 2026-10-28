@@ -29,6 +29,21 @@ namespace TalkingKitty.Voice
         [SerializeField] AudioSource output;
         [SerializeField] MonoBehaviour catPresenterBehaviour;
 
+        /// <summary>Minimum playback pitch; <see cref="Pitch"/> clamps to this.</summary>
+        public const float PitchMin = 0.5f;
+        /// <summary>Maximum playback pitch; <see cref="Pitch"/> clamps to this.</summary>
+        public const float PitchMax = 2f;
+
+        /// <summary>
+        /// Playback pitch, clamped to [PitchMin, PitchMax]. Applied on the
+        /// next playback; the parent panel's slider writes here.
+        /// </summary>
+        public float Pitch
+        {
+            get => pitch;
+            set => pitch = Mathf.Clamp(value, PitchMin, PitchMax);
+        }
+
         /// <summary>Mic loop clip length. Long enough that a maxSeconds capture plus mic latency fits.</summary>
         const int MicLengthSeconds = 8;
         /// <summary>Requested mic sample rate; the device may return a different one (we use the clip's actual rate).</summary>
