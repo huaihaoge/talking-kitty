@@ -25,6 +25,8 @@
 1. 安装 [Unity Hub](https://unity.com/download) 和一个 Unity LTS 版本（含 Android Build Support 模块）。
 2. 在 Unity Hub 中选择 **Add → Add project from disk**，选择本仓库根目录。
 3. 首次打开会自动导入 `Assets/` 并生成 `Library/` 等目录，请耐心等待。
+4. 首次打开后，运行菜单 **TalkingKitty → Build Main Scene**：自动生成 `Assets/Scenes/Main.unity`（主场景 + 全部引用 + UI），并把它加入构建场景列表第 0 位。该菜单可以随时重跑重建场景。
+5. 场景文件 `Main.unity` 生成后会提交进仓库；之后重新打开项目不需要再跑菜单。
 
 ## 构建 Android APK
 

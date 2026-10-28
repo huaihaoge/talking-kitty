@@ -26,6 +26,9 @@ namespace TalkingKitty.ChildLock
         [SerializeField] ChildLockController childLock;
         [SerializeField] UnityEvent onParentGateRequested = new UnityEvent();
 
+        /// <summary>The serialized gate event, exposed for scene builders and tests.</summary>
+        public UnityEvent OnParentGateRequested => onParentGateRequested;
+
         [Header("Activation")]
         [Tooltip("If true, gestures only respond while the app is locked (kid mode). Otherwise always active; the panel still requires the PIN.")]
         [SerializeField] bool onlyWhenLocked = false;

@@ -185,6 +185,12 @@ namespace TalkingKitty.ChildLock
                     {
                         childLock.SetPin(pin);
                         _pendingPin = null;
+                        // First-run default (design spec): once a PIN is set,
+                        // the Set/Confirm PIN prompts served as the one-time
+                        // parent tip; default the child lock to ON unless the
+                        // parent already made an explicit choice.
+                        if (!PlayerPrefs.HasKey(ChildLockController.LockedKey))
+                            childLock.SetLocked(true);
                         EnterMenu();
                     }
                     else
