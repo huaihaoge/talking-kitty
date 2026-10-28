@@ -155,7 +155,7 @@ namespace TalkingKitty.EditorTools
             canvas.renderMode = RenderMode.ScreenSpaceOverlay;
 
             var scaler = canvasGo.GetComponent<CanvasScaler>();
-            scaler.uiScaleMode = CanvasScaler.ScaleFactorWithScreenSize;
+            scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
             scaler.referenceResolution = RefResolution;
             scaler.matchWidthOrHeight = 0.5f;
 
@@ -163,6 +163,7 @@ namespace TalkingKitty.EditorTools
             var panelGo = new GameObject("ParentPanel", typeof(RectTransform));
             var panelRect = (RectTransform)panelGo.transform;
             panelRect.SetParent(canvasGo.transform, false);
+            Stretch(panelRect);
             var panel = panelGo.AddComponent<ParentPanel>();
 
             // --- PanelRoot: hidden dim overlay, shake target ---
