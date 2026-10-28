@@ -59,8 +59,8 @@ namespace TalkingKitty.EditorTools
             var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
 
             BuildCamera();
-            var cat = BuildCat();
-            var voiceLoop = BuildAudio(cat);
+            var kid = Kid3DCharacterBuilder.Build(null);
+            var voiceLoop = BuildAudio(kid);
             BuildChildLockAndUi(voiceLoop);
 
             EditorSceneManager.MarkSceneDirty(scene);
@@ -73,8 +73,8 @@ namespace TalkingKitty.EditorTools
             AddSceneToBuildSettings();
             AssetDatabase.SaveAssets();
 
-            Debug.Log($"[TalkingKittySceneBuilder] Built and saved {ScenePath} and set it as build scene 0. " +
-                      "Enter Play Mode and verify: speak → pitched echo, cat tints, corner hold 3s → parent panel.");
+            Debug.Log($"[TalkingKittySceneBuilder] Built and saved {ScenePath} with 3D kid. " +
+                      "Verify: speak → pitched echo + jaw flap, corner hold 3s → parent panel.");
         }
 
         // ---- import settings -------------------------------------------------
@@ -109,45 +109,27 @@ namespace TalkingKitty.EditorTools
             go.transform.position = new Vector3(0f, 0f, -10f);
 
             var cam = go.AddComponent<Camera>();
-            cam.orthographic = true;
-            cam.orthographicSize = 4f;
+            // Perspective framing for the procedural 3D kid.
+            cam.orthographic = false;
+            cam.fieldOfView = 35f;
+            go.transform.position = new Vector3(0f, 0.55f, -4.2f);
+            go.transform.LookAt(new Vector3(0f, 0.55f, 0f));
             cam.clearFlags = CameraClearFlags.SolidColor;
-            cam.backgroundColor = new Color(0.13f, 0.16f, 0.28f);
+            cam.backgroundColor = new Color(0.55f, 0.72f, 0.92f);
 
             go.AddComponent<AudioListener>();
+
+            // Soft key light so the kid reads in 3D.
+            var lightGo = new GameObject("KeyLight");
+            lightGo.transform.position = new Vector3(-1.2f, 3.2f, -2.5f);
+            lightGo.transform.rotation = Quaternion.Euler(50f, 30f, 0f);
+            var light = lightGo.AddComponent<Light>();
+            light.type = LightType.Directional;
+            light.intensity = 1.1f;
+            light.color = new Color(1f, 0.98f, 0.95f);
         }
 
-        static SimpleCatPresenter BuildCat()
-        {
-            var go = new GameObject("Cat");
-
-            var sr = go.AddComponent<SpriteRenderer>();
-            sr.sprite = AssetDatabase.LoadAssetAtPath<Sprite>(CatSpritePath);
-            sr.sortingOrder = 0;
-
-            var mouthGo = new GameObject("Mouth");
-            mouthGo.transform.SetParent(go.transform, false);
-            // Lower-center of the cat face (sprite is 4 units tall at PPU 128).
-            mouthGo.transform.localPosition = new Vector3(0f, -0.85f, 0f);
-            mouthGo.transform.localScale = Vector3.one * 0.85f;
-
-            var mouthSr = mouthGo.AddComponent<SpriteRenderer>();
-            mouthSr.sprite = AssetDatabase.LoadAssetAtPath<Sprite>(MouthClosedPath);
-            mouthSr.sortingOrder = 1;
-
-            var presenter = go.AddComponent<SimpleCatPresenter>();
-            var so = new SerializedObject(presenter);
-            so.FindProperty("body").objectReferenceValue = sr;
-            so.FindProperty("mouth").objectReferenceValue = mouthSr;
-            so.FindProperty("mouthClosed").objectReferenceValue =
-                AssetDatabase.LoadAssetAtPath<Sprite>(MouthClosedPath);
-            so.FindProperty("mouthOpen").objectReferenceValue =
-                AssetDatabase.LoadAssetAtPath<Sprite>(MouthOpenPath);
-            so.ApplyModifiedProperties();
-            return presenter;
-        }
-
-        static VoiceLoop BuildAudio(SimpleCatPresenter cat)
+        static VoiceLoop BuildAudio(MonoBehaviour presenter)
         {
             var go = new GameObject("Audio");
 
@@ -158,7 +140,7 @@ namespace TalkingKitty.EditorTools
             var loop = go.AddComponent<VoiceLoop>();
             var so = new SerializedObject(loop);
             so.FindProperty("output").objectReferenceValue = src;
-            so.FindProperty("catPresenterBehaviour").objectReferenceValue = cat;
+            so.FindProperty("catPresenterBehaviour").objectReferenceValue = presenter;
             so.ApplyModifiedProperties();
             return loop;
         }
