@@ -38,6 +38,8 @@ namespace TalkingKitty.EditorTools
     {
         const string ScenePath = "Assets/Scenes/Main.unity";
         const string CatSpritePath = "Assets/Art/cat_placeholder.png";
+        const string MouthClosedPath = "Assets/Art/mouth_closed.png";
+        const string MouthOpenPath = "Assets/Art/mouth_open.png";
 
         // CanvasScaler reference resolution (portrait phone).
         static readonly Vector2 RefResolution = new Vector2(1080f, 1920f);
@@ -50,6 +52,9 @@ namespace TalkingKitty.EditorTools
                 Debug.LogError($"[TalkingKittySceneBuilder] Cat sprite missing at {CatSpritePath}; aborting.");
                 return;
             }
+
+            ConfigureSpriteImport(MouthClosedPath, 64f);
+            ConfigureSpriteImport(MouthOpenPath, 64f);
 
             var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
 
@@ -77,19 +82,22 @@ namespace TalkingKitty.EditorTools
         static bool ConfigureCatSpriteImport()
         {
             if (!File.Exists(CatSpritePath)) return false;
-            AssetDatabase.ImportAsset(CatSpritePath);
-
-            if (AssetImporter.GetAtPath(CatSpritePath) is TextureImporter importer)
-            {
-                importer.textureType = TextureImporterType.Sprite;
-                importer.spriteImportMode = SpriteImportMode.Single;
-                importer.spritePixelsPerUnit = 128f; // 512px → 4 world units at ortho size 4
-                importer.filterMode = FilterMode.Point;
-                importer.mipmapEnabled = false;
-                importer.alphaIsTransparency = true;
-                importer.SaveAndReimport();
-            }
+            ConfigureSpriteImport(CatSpritePath, 128f); // 512px → 4 world units at ortho size 4
             return true;
+        }
+
+        static void ConfigureSpriteImport(string path, float pixelsPerUnit)
+        {
+            if (!File.Exists(path)) return;
+            AssetDatabase.ImportAsset(path);
+            if (AssetImporter.GetAtPath(path) is not TextureImporter importer) return;
+            importer.textureType = TextureImporterType.Sprite;
+            importer.spriteImportMode = SpriteImportMode.Single;
+            importer.spritePixelsPerUnit = pixelsPerUnit;
+            importer.filterMode = FilterMode.Bilinear;
+            importer.mipmapEnabled = false;
+            importer.alphaIsTransparency = true;
+            importer.SaveAndReimport();
         }
 
         // ---- scene objects ----------------------------------------------------
@@ -115,10 +123,26 @@ namespace TalkingKitty.EditorTools
 
             var sr = go.AddComponent<SpriteRenderer>();
             sr.sprite = AssetDatabase.LoadAssetAtPath<Sprite>(CatSpritePath);
+            sr.sortingOrder = 0;
+
+            var mouthGo = new GameObject("Mouth");
+            mouthGo.transform.SetParent(go.transform, false);
+            // Lower-center of the cat face (sprite is 4 units tall at PPU 128).
+            mouthGo.transform.localPosition = new Vector3(0f, -0.85f, 0f);
+            mouthGo.transform.localScale = Vector3.one * 0.85f;
+
+            var mouthSr = mouthGo.AddComponent<SpriteRenderer>();
+            mouthSr.sprite = AssetDatabase.LoadAssetAtPath<Sprite>(MouthClosedPath);
+            mouthSr.sortingOrder = 1;
 
             var presenter = go.AddComponent<SimpleCatPresenter>();
             var so = new SerializedObject(presenter);
             so.FindProperty("body").objectReferenceValue = sr;
+            so.FindProperty("mouth").objectReferenceValue = mouthSr;
+            so.FindProperty("mouthClosed").objectReferenceValue =
+                AssetDatabase.LoadAssetAtPath<Sprite>(MouthClosedPath);
+            so.FindProperty("mouthOpen").objectReferenceValue =
+                AssetDatabase.LoadAssetAtPath<Sprite>(MouthOpenPath);
             so.ApplyModifiedProperties();
             return presenter;
         }
